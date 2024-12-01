@@ -1,34 +1,40 @@
 import serial
-import tkinter as tk
+import customtkinter as ctk
 from tkinter import colorchooser
-from tkinter import messagebox
 
 # Configuración del puerto serial
 try:
     arduino = serial.Serial('COM5', 9600, timeout=1)
 except:
-    messagebox.showerror("Error", "No se pudo conectar al Arduino. Verifica el puerto COM.")
+    print("Error: No se pudo conectar al Arduino en COM5")
     exit()
 
-def send_color():
-    color_code = colorchooser.askcolor(title="Elige un color")[0]
+# Funciones
+def choose_color():
+    color_code = colorchooser.askcolor(title="Selecciona un color")[0]  # Devuelve (R, G, B)
     if color_code:
         r, g, b = map(int, color_code)
         command = f"COLOR:{r:03},{g:03},{b:03}\n"
         arduino.write(command.encode())
 
-def send_effect(effect):
-    command = f"EFFECT:{effect}\n"
-    arduino.write(command.encode())
+def activate_rainbow():
+    arduino.write(b"RAINBOW\n")
 
-root = tk.Tk()
+def toggle_lights():
+    arduino.write(b"TOGGLE\n")
+
+# Interfaz gráfica
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("dark-blue")
+
+root = ctk.CTk()
 root.title("Control de Luces RGB")
-root.geometry("300x200")
+root.geometry("400x300")
 
-tk.Label(root, text="Control de Luces RGB").pack(pady=10)
+# Botones
+ctk.CTkButton(root, text="Elegir Color", command=choose_color).pack(pady=10)
+ctk.CTkButton(root, text="Efecto Rainbow", command=activate_rainbow).pack(pady=10)
+ctk.CTkButton(root, text="Encender/Apagar", command=toggle_lights).pack(pady=10)
 
-tk.Button(root, text="Cambiar Color", command=send_color).pack(pady=10)
-tk.Button(root, text="Efecto 1", command=lambda: send_effect(1)).pack(pady=10)
-tk.Button(root, text="Efecto 2", command=lambda: send_effect(2)).pack(pady=10)
-
+# Inicia la ventana principal
 root.mainloop()
